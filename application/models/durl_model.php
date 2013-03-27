@@ -352,6 +352,52 @@ class durl_model extends CI_Model
         $this->db->insert('opens', $data);
     }
 
+    /**
+     * Given an API key and a Campaign title, return the clients image and the campaign image
+     * @param string $api_key
+     * @param string $campaign_title
+     * @return array $images
+     */
+    function client_and_campaign_image($api_key, $campaign_title)
+    {
+        $images = array();
+
+        $query = $this->db->query('SELECT clients.image as client_image, campaigns.image as campaign_image FROM clients INNER JOIN campaigns ON clients.id = campaigns.client_id WHERE clients.api_key = \'' . $api_key . '\' AND campaigns.campaign_title = \'' . $campaign_title . '\'');
+
+        if ($query->num_rows() > 0)
+        {
+            foreach ($query->result_array() as $row)
+            {
+                $images['client_image'] = $row["client_image"];
+                $images['campaign_image'] = $row["campaign_image"];
+            }
+        }
+
+        return $images;
+    }
+
+    /**
+     * Given a client image and a campaign image return the distinct opens
+     * @param string $client_image
+     * @param string $campaign_image
+     */
+    function campaign_distinct_opens($client_image, $campaign_image)
+    {
+        $opens = array();
+
+        $query = $this->db->query('SELECT DISTINCT opens.recipient_image, recipients.recipient_email FROM opens INNER JOIN recipients ON opens.recipient_image = recipients.image where client_image=\'' . $client_image . '\' and campaign_image = \'' . $campaign_image . '\' ');
+
+        if ($query->num_rows() > 0)
+        {
+            foreach ($query->result_array() as $row)
+            {
+                $opens[] = $row;
+            }
+        }
+
+        return $opens;
+    }
+
 }
 
 /* End of file durl_model.php */
